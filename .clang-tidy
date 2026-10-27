@@ -1,0 +1,20 @@
+# Curated, low-noise set. Each family has a reason:
+#  bugprone-*      likely bugs      | performance-*  avoidable cost
+#  modernize-*     C++11..20 idioms | readability-*  only the cheap, objective ones
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  performance-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  -modernize-use-nodiscard,
+  readability-redundant-*,
+  readability-container-size-empty,
+  readability-else-after-return,
+  misc-unused-*,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-pro-type-member-init
+WarningsAsErrors: ''
+HeaderFilterRegex: 'include/mos6502/.*'

@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.20)
+project(consumer CXX)
+find_package(mos6502 1.0 CONFIG REQUIRED)
+add_executable(hello main.cpp)
+target_link_libraries(hello PRIVATE mos6502::mos6502 mos6502::debug)

@@ -1,0 +1,63 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs of the same branch/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "Linux GCC",   os: ubuntu-latest,  cc: gcc,   cxx: g++,     experimental: false }
+          - { name: "Linux Clang", os: ubuntu-latest,  cc: clang, cxx: clang++, experimental: false }
+          - { name: "macOS",       os: macos-latest,   cc: clang, cxx: clang++, experimental: false }
+          # MSVC uses a different warning set (see cmake/Warnings.cmake); treat
+          # failures as information until the matrix has been green for a while.
+          - { name: "Windows MSVC", os: windows-latest, cc: cl,   cxx: cl,      experimental: true }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+
+  sanitizers:
+    name: ASan + UBSan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake --preset asan
+      - run: cmake --build --preset asan
+      - run: ctest --preset asan
+
+  package:
+    name: Install + consume
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the library
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMOS6502_BUILD_TESTS=OFF
+          cmake --build build
+          cmake --install build --prefix "$RUNNER_TEMP/mos6502"
+      - name: Build an external project against it
+        run: |
+          cmake -S examples/consumer -B consumer-build -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/mos6502"
+          cmake --build consumer-build
+          ./consumer-build/hello

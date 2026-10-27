@@ -1,0 +1,8 @@
+# Style: Google-derived, 100 columns. Run: clang-format -i src/*.cpp include/mos6502/*.hpp ...
+BasedOnStyle: Google
+ColumnLimit: 100
+IndentWidth: 2
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortCaseLabelsOnASingleLine: true
+IncludeBlocks: Regroup
